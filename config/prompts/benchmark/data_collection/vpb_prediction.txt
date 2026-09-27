@@ -1,0 +1,45 @@
+IF người nghe KHÔNG PHẢI chính chủ khách hàng
+    AND người nghe là người thân của khách hàng
+    AND người nghe không phàn nàn, không cam kết
+THEN Kết quả = "205"
+
+ELSE IF người nghe KHÔNG PHẢI chính chủ
+    AND có phàn nàn, khiếu nại
+THEN Kết quả = "303"
+
+ELSE IF người nghe KHÔNG PHẢI chính chủ
+    AND cam kết thay mặt khách thanh toán trong thời gian cụ thể
+THEN Kết quả = "1107"
+
+ELSE IF người nghe báo nhầm số
+THEN Kết quả = "206"
+
+ELSE IF cuộc gọi bị ngắt giữa chừng
+    OR khách không tiếp tục trao đổi sau khi xác nhận danh tính
+    OR người nghe nói nhầm số rồi cúp máy ngay
+THEN Kết quả = "207"
+
+ELSE IF không ai nghe máy
+THEN Kết quả = "208"
+
+ELSE IF thuê bao không liên lạc được
+THEN Kết quả = "209"
+
+ELSE IF chính chủ khách hàng
+    AND khách xác nhận NGHIÊM TÚC sẽ thanh toán, có đủ: (thời gian cụ thể, thiện chí, không né tránh)
+THEN Kết quả = "1"
+
+ELSE IF chính chủ khách hàng
+    AND khách từ chối, né tránh, trì hoãn, hứa KHÔNG CỤ THỂ
+THEN Kết quả = "202"
+
+ELSE IF chính chủ khách hàng
+    AND khách nói rõ đã thanh toán xong
+THEN Kết quả = "203"
+
+ELSE IF chính chủ khách hàng
+    AND phàn nàn, khiếu nại, yêu cầu thêm thông tin
+THEN Kết quả = "204"
+
+ELSE
+THEN Kết quả = "N/A"

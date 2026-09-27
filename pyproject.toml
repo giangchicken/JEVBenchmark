@@ -1,0 +1,75 @@
+[project]
+name = "jev-benchmark"
+version = "0.1.0"
+description = "Test sets and a paired benchmark comparing JEV against the LLMs in config/model."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # A branch, not a tag, as in DataForce: the library is on no registry. `uv.lock`
+    # records the commit, so a run is still built from one tree.
+    "agent-toolkit[llm] @ git+https://github.com/giangchicken/agent-toolkit.git@dev",
+    # Not imported directly: `agent_toolkit.llm` owns the client. Declared for the
+    # floor, so uv does not resolve a major the library is not tested on.
+    "openai>=3.2",
+    "pydantic>=2.13",
+    # The JEV side: `Agent('typesafe:jev-latest', output_type=...)`.
+    "pydantic-ai-slim[typesafe]>=2.49.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+# The library is a direct git reference; hatchling refuses one unless told.
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["benchmark"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14",
+    "pytest>=8.0.0",
+    # The runners are coroutines, so a test that drives one needs a loop.
+    "pytest-asyncio>=0.24.0",
+    "ruff>=0.13.1",
+]
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py312"
+# Specs and plans quote code that does not all exist yet.
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_unreachable = true
+
+# `agent_toolkit` ships no `py.typed` but is annotated; following the import reads its
+# signatures instead of making its whole surface `Any`.
+[[tool.mypy.overrides]]
+module = "agent_toolkit.*"
+follow_untyped_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "integration: needs the network or a model endpoint; excluded from `make check`",
+]

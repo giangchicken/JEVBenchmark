@@ -1,0 +1,4 @@
+Giới tính của khách hàng (người nói vai user) trong cuộc gọi, dựa vào cách khách tự xưng, cách khách sửa lại cách gọi của nhân viên, và những gì khách kể về bản thân. Chỉ chọn 1 trong các giá trị sau:
+- "male": khách là nam (ví dụ tự xưng anh, chú, bác trai, ông, hoặc nói "vợ tôi", "bà nhà tôi").
+- "female": khách là nữ (ví dụ tự xưng chị, cô, bác gái, bà, hoặc nói "chồng chị", "ông xã").
+- "unknown": không đủ căn cứ, khách chỉ dùng đại từ trung tính (tôi, mình, em) và không có tín hiệu nào khác. Cách nhân viên gọi khách không phải là căn cứ nếu khách không xác nhận.

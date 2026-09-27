@@ -1,0 +1,35 @@
+Kết quả cuộc gọi tư vấn mở khoản vay qua điện thoại. Hãy ghi nhận giá trị trường thông tin này là chỉ 1 trong các giá trị sau đây: 
+IF người nghe báo nhầm số ít nhất 1 lần
+    OR người nghe muốn vay số tiền từ 1 tỷ trở lên
+THEN Kết quả = "Non_Qualified_Customer"
+ 
+ELSE IF người nghe chửi thô tục
+    OR người nghe phản ứng tiêu cực mạnh
+    OR người nghe yêu cầu không gọi nữa
+THEN Kết quả = "DNC_request"
+ 
+ELSE IF đoạn đầu cuộc gọi khách báo bận và kết thúc
+    OR người khác nghe máy hộ
+    OR khách im lặng / cúp máy / yêu cầu lặp lại
+THEN Kết quả = "To_Follow_Up"
+ 
+ELSE IF khách hàng từ chối vay hoặc hàm ý từ chối
+THEN Kết quả = "No_Demand"
+ 
+ELSE IF khách hàng đồng ý muốn vay
+THEN
+    IF số tiền muốn vay từ 6 triệu đến 100 triệu
+        THEN Kết quả = "Success_A_XS"
+    ELSE
+        (không xác định rõ số tiền
+         OR < 6 triệu
+         OR > 100 triệu và < 1 tỷ)
+        THEN Kết quả = "Success_B_XS"
+ 
+ELSE IF khách hỏi thông tin, tìm hiểu khoản vay
+    (lãi suất, kỳ hạn, thủ tục, phí, điều kiện…)
+    VÀ chưa xác nhận có vay hay không
+THEN Kết quả = "Other"
+ 
+ELSE
+    Kết quả = "To_Follow_Up"

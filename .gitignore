@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+# Benchmark runs: predictions and reports, regenerated from the test sets.
+results/
+# Model configs hold API keys.
+config/model/
+tmp/
+tests/
+docs/
+data/
