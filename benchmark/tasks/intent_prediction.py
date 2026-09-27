@@ -6,11 +6,9 @@ The definitions are production's own prompt, `data/intent_prompt.txt`, which spe
 - The LLM gets that prompt as one `user` message, filled by `slot_filling` as production fills
   it. The amount the customer promised is not extracted here, so `willpay_number` says so.
   Its answer starts with the code: `"6.2 Đã thanh toán < today"`, `"13. FAQ"`.
-- JEV picks one of `IntentLabel` itself, under a field whose description is the prompt's
-  INTENT LIST, IMPORTANT RULES and NUMBER NORMALIZATION with every slot written out in words,
-  less the rules on how to write the answer (`ANSWER_FORMAT_RULES`) since JEV writes none,
-  then which code each label is. The date and the amount are facts about this call, so they go
-  in the state.
+- JEV picks one of `IntentLabel` itself, asked from `intent/intent_jev_prediction.json`, one
+  criterion per label. The date and the amount are facts about this call, so they go in the
+  state.
 """
 
 import re
@@ -21,8 +19,9 @@ from agent_toolkit.string_utils import slot_filling
 
 from ..schema import INTENT_CODES, IntentInput, IntentLabel, JevInput
 from .common import (
+    PROMPTS,
     build_answer_type,
-    describe_label_codes,
+    read_jev_definition,
     read_label_definition,
     render_conversation,
 )
@@ -32,42 +31,16 @@ PROMPT = read_label_definition(
 )
 UNKNOWN_PROMISE = "không rõ"
 
-# The question JEV is asked: the prompt from its intent list up to the call's own context.
-QUESTION_START = "# INTENT LIST"
-QUESTION_END = "# CONTEXT INFORMATION"
-SLOTS_IN_WORDS = {
-    "sum_OVD_amount": "số nợ quá hạn",
-    "last_user_utterance": "câu nói cuối của khách",
-    "willpay_number": "số tiền khách hứa trả",
-}
-# The rules that tell an LLM how to write its answer, by how their line starts.
-ANSWER_FORMAT_RULES = ("- Brief response.", "- Do NOT ask questions.")
-
 LABELS: tuple[str, ...] = get_args(IntentLabel)
 OPTION_TO_LABEL: dict[str | None, str] = {label: label for label in LABELS}
 
 LEADING_CODE = re.compile(r"^\W*(\d+(?:\.\d+)?)")
 
-
-def build_intent_question(prompt: str) -> str:
-    """The intent list, the rules and the number normalization, with no slot left to fill and no
-    answer-format rule, then which code each label is.
-
-    `ValueError` when a section or an answer-format rule is not in the prompt: a prompt that
-    changed would otherwise send JEV the rule it was meant to lose.
-    """
-    start = prompt.index(QUESTION_START)
-    end = prompt.index(QUESTION_END, start)
-    lines = prompt[start:end].strip().splitlines()
-    kept = [line for line in lines if not line.startswith(ANSWER_FORMAT_RULES)]
-    if len(lines) - len(kept) != len(ANSWER_FORMAT_RULES):
-        raise ValueError(f"the prompt does not hold each of {ANSWER_FORMAT_RULES} once")
-    sections = slot_filling("\n".join(kept), SLOTS_IN_WORDS)
-    return f"{sections}\n\n{describe_label_codes(INTENT_CODES)}"
-
-
+JEV_DEFINITION = read_jev_definition(
+    PROMPTS / "intent" / "intent_jev_prediction.json", LABELS
+)
 ANSWER_TYPE = build_answer_type(
-    "IntentAnswer", "intent", LABELS, build_intent_question(PROMPT)
+    "IntentAnswer", "intent", JEV_DEFINITION.criteria, JEV_DEFINITION.question
 )
 
 

@@ -5,10 +5,11 @@ The definitions are the corpus's own system prompt, verbatim. Only the tool's na
 - The LLM gets that prompt and the catalog as the system message, then the rendered
   conversation as one user message, and answers a JSON array of names: `[]` is `NO_TOOL`, one name of the catalog is that
   tool, anything else is no answer.
-- JEV picks a name of the catalog or none, asked `JEV_QUESTION` followed by the catalog: the
-  corpus prompt asks for a JSON array of any length, which a single pick cannot answer. The
-  catalog is how each option is defined, so it is part of the question, and the state is the
-  conversation alone. The options differ per sample, so the answer type is built per sample.
+- JEV picks a name of the catalog or none, asked `JEV_QUESTION`: the corpus prompt asks for a
+  JSON array of any length, which a single pick cannot answer. What the catalog says of a
+  tool -- its description, which says when to call it and when not to, and its parameters --
+  is that tool's criterion, and `NO_TOOL_CRITERION` none's; the state is the conversation
+  alone. The options differ per sample, so the answer type is built per sample.
 """
 
 import json
@@ -16,7 +17,7 @@ from typing import Any
 
 from agent_toolkit.string_utils import extract_json_from_text
 
-from ..schema import NO_TOOL, JevInput, ToolDecisionInput
+from ..schema import NO_TOOL, JevInput, ToolDecisionInput, ToolSpec
 from .common import (
     PROMPTS,
     build_answer_type,
@@ -32,8 +33,9 @@ ANSWER_FORMAT = (
 )
 JEV_QUESTION = (
     "Based on the available tools and conversation history, which tool should the assistant"
-    " call next? Pick none if no tool should be called."
+    " call next?"
 )
+NO_TOOL_CRITERION = "No tool should be called."
 
 
 def build_llm_messages(
@@ -94,15 +96,22 @@ def parse_llm_answer(
     return called.pop() if len(called) == 1 and called <= names else None
 
 
+def describe_tool(tool: ToolSpec) -> str:
+    """A tool's criterion: its description, then its parameters as JSON when it takes any."""
+    if not tool.parameters:
+        return tool.description
+    parameters = json.dumps(tool.parameters, ensure_ascii=False)
+    return f"{tool.description}\nParameters: {parameters}"
+
+
 def build_jev_input(sample_id: str, sample_input: ToolDecisionInput) -> JevInput:
-    names = [tool.name for tool in sample_input.tools]
-    question = f"{JEV_QUESTION}\n\nTools:\n{render_tools(sample_input.tools)}"
-    option_to_label: dict[str | None, str] = {name: name for name in names}
+    criteria = {tool.name: describe_tool(tool) for tool in sample_input.tools}
+    option_to_label: dict[str | None, str] = {name: name for name in criteria}
     option_to_label[None] = NO_TOOL
     return JevInput(
         state=render_conversation(sample_input.messages),
         output_type=build_answer_type(
-            "ToolAnswer", "tool", names, question, allow_none=True
+            "ToolAnswer", "tool", criteria, JEV_QUESTION, NO_TOOL_CRITERION
         ),
         option_to_label=option_to_label,
     )

@@ -1,7 +1,8 @@
 """logic · the customer's sentiment at their last turn, read in context, asked of an LLM and of JEV.
 
-The definitions are `sentiment/sentiment_prediction.txt`, one line per label. The LLM answers
-`{"label": ...}`; JEV picks from `SentimentLabel` under the field `sentiment`.
+The definitions are `sentiment/sentiment_prediction.txt`, one line per label, which the LLM
+gets and answers as `{"label": ...}`. JEV picks from `SentimentLabel` under the field
+`sentiment`, asked from `sentiment/sentiment_jev_prediction.json`.
 """
 
 from typing import get_args
@@ -12,6 +13,7 @@ from .common import (
     build_answer_type,
     build_classification_messages,
     parse_json_label,
+    read_jev_definition,
     read_label_definition,
     render_conversation,
 )
@@ -19,7 +21,12 @@ from .common import (
 KEY = "label"
 LABELS: tuple[str, ...] = get_args(SentimentLabel)
 DEFINITION = read_label_definition(PROMPTS / "sentiment" / "sentiment_prediction.txt")
-ANSWER_TYPE = build_answer_type("SentimentAnswer", "sentiment", LABELS, DEFINITION)
+JEV_DEFINITION = read_jev_definition(
+    PROMPTS / "sentiment" / "sentiment_jev_prediction.json", LABELS
+)
+ANSWER_TYPE = build_answer_type(
+    "SentimentAnswer", "sentiment", JEV_DEFINITION.criteria, JEV_DEFINITION.question
+)
 
 
 def build_llm_messages(

@@ -1,8 +1,13 @@
-"""adapter · a run's files: `predictions/<model>.jsonl`, `report.json` and `report.md`.
+"""adapter · a run's files: `predictions/<model>.jsonl`, `input/<model>.jsonl`, `report.json`
+and `report.md`.
 
 A run directory is `results/<dataset>/<run_id>/`. Predictions are appended one line per sample
 as each one comes back, so a run that stops keeps what it had; reading them back keeps the
 last line per id and skips a line that is not a whole prediction -- the one a crash cut short.
+What the model was sent for it is in the prediction's own `input`, and again in `input/`, one
+line `{"id", **prediction.input}` written with the prediction, so the two files hold the same ids
+in the same order; a sample asked again
+after a failed call has a line for each ask in both, and the last one is the one that stands.
 
 The report is written twice from one `Report`: as JSON for a program, as Markdown for a reader.
 No key is in either: a `Report` holds names, figures and sentences, never a config.
@@ -21,6 +26,7 @@ from .JEV_vs_LLM_comparison import ModelMetrics, PairedComparison
 from .schema import Frozen, Prediction
 
 PREDICTIONS_DIR: Final = "predictions"
+INPUT_DIR: Final = "input"
 HIGH_ERROR_RATE: Final = (
     0.20  # above this a model's figures are mostly about its endpoint
 )
@@ -51,7 +57,11 @@ def build_predictions_path(run_dir: Path, model: str) -> Path:
     return run_dir / PREDICTIONS_DIR / f"{model}.jsonl"
 
 
-def append_prediction(path: Path, prediction: Prediction) -> None:
+def build_input_path(run_dir: Path, model: str) -> Path:
+    return run_dir / INPUT_DIR / f"{model}.jsonl"
+
+
+def append_line(path: Path, line: str) -> None:
     """One more line, flushed, so it survives the run stopping right after.
 
     A file a crash left without its final newline gets one first, or the new line would be
@@ -63,8 +73,20 @@ def append_prediction(path: Path, prediction: Prediction) -> None:
             file.seek(-1, os.SEEK_END)
             if file.read(1) != b"\n":
                 file.write(b"\n")
-        file.write(prediction.model_dump_json().encode() + b"\n")
+        file.write(line.encode() + b"\n")
         file.flush()
+
+
+def append_prediction(path: Path, prediction: Prediction) -> None:
+    """The prediction as one more line, `input` included."""
+    append_line(path, prediction.model_dump_json())
+
+
+def append_input(path: Path, prediction: Prediction) -> None:
+    """What the model was sent for that prediction, as one more line of `input/<model>.jsonl`."""
+    append_line(
+        path, json.dumps({"id": prediction.id, **prediction.input}, ensure_ascii=False)
+    )
 
 
 def read_prediction_file(path: Path) -> dict[str, Prediction]:

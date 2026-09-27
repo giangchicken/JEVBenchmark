@@ -1,45 +1,51 @@
-IF người nghe KHÔNG PHẢI chính chủ khách hàng
-    AND người nghe là người thân của khách hàng
-    AND người nghe không phàn nàn, không cam kết
+Trong cuộc gọi, assistant là nhân viên, user là người nghe; "chính chủ" là khách hàng đang nợ.
+Xét lần lượt từ trên xuống, gặp điều kiện đúng đầu tiên thì dừng.
+
+IF nhân viên chuyển máy sang bộ phận tư vấn / chuyên viên
+    (vd. "em chuyển anh sang bộ phận tư vấn", "anh giữ máy để chuyên viên hỗ trợ")
+THEN
+    IF người nghe là chính chủ THEN Kết quả = "204"
+    ELSE Kết quả = "303"
+
+ELSE IF người nghe nói đã thanh toán
+    (kể cả khi sau đó hỏi thêm về số tiền, phí, hạn)
+THEN Kết quả = "203"
+
+ELSE IF người nghe hẹn một thời điểm trả cụ thể
+    AND nhân viên chấp nhận mốc đó
+    (nhân viên xác nhận "như đã hẹn" / "theo thỏa thuận" / "đúng hẹn", hoặc chuyển sang nội dung
+     khác mà không đòi trả sớm hơn; nếu người nghe đã từ chối trước đó, chỉ tính khi họ đồng ý
+     đúng mốc nhân viên đề nghị hoặc sớm hơn)
+THEN
+    IF người nghe là chính chủ THEN Kết quả = "1"
+    ELSE Kết quả = "1107"
+
+ELSE IF người được đề nghị thanh toán (chính chủ, hoặc người đã nhận trả hộ)
+    từ chối, né tránh, hoặc hẹn một mốc mà nhân viên không chấp nhận
+    (nhân viên vẫn đòi trả sớm hơn, hoặc nói "em ghi nhận anh/chị từ chối")
+THEN Kết quả = "202"
+
+ELSE IF người nghe thừa nhận có quen khách:
+    nêu quan hệ (bạn, đồng nghiệp, người nhà…)
+    OR đáp "đúng rồi" khi được hỏi có phải người quen của khách
+    (kể cả khi họ chửi, cho số mới, hoặc nói nhận trả hộ nhưng chưa hẹn ngày)
 THEN Kết quả = "205"
 
-ELSE IF người nghe KHÔNG PHẢI chính chủ
-    AND có phàn nàn, khiếu nại
-THEN Kết quả = "303"
-
-ELSE IF người nghe KHÔNG PHẢI chính chủ
-    AND cam kết thay mặt khách thanh toán trong thời gian cụ thể
-THEN Kết quả = "1107"
-
-ELSE IF người nghe báo nhầm số
+ELSE IF khi nhân viên hỏi "anh chị có biết [tên khách] không",
+    người nghe xác nhận không quen, không biết người này
 THEN Kết quả = "206"
 
-ELSE IF cuộc gọi bị ngắt giữa chừng
-    OR khách không tiếp tục trao đổi sau khi xác nhận danh tính
-    OR người nghe nói nhầm số rồi cúp máy ngay
-THEN Kết quả = "207"
-
-ELSE IF không ai nghe máy
+ELSE IF không có lượt nói nào của người nghe
 THEN Kết quả = "208"
 
 ELSE IF thuê bao không liên lạc được
 THEN Kết quả = "209"
 
-ELSE IF chính chủ khách hàng
-    AND khách xác nhận NGHIÊM TÚC sẽ thanh toán, có đủ: (thời gian cụ thể, thiện chí, không né tránh)
-THEN Kết quả = "1"
-
-ELSE IF chính chủ khách hàng
-    AND khách từ chối, né tránh, trì hoãn, hứa KHÔNG CỤ THỂ
-THEN Kết quả = "202"
-
-ELSE IF chính chủ khách hàng
-    AND khách nói rõ đã thanh toán xong
-THEN Kết quả = "203"
-
-ELSE IF chính chủ khách hàng
-    AND phàn nàn, khiếu nại, yêu cầu thêm thông tin
-THEN Kết quả = "204"
+ELSE IF cuộc gọi dừng khi chưa xác định được gì:
+    người nghe chỉ nói "nhầm số" ở câu chào rồi không trả lời câu hỏi có biết khách không
+        (im lặng, alo, báo bận, hỏi chuyện khác)
+    OR người nghe nhận là chính chủ nhưng cuộc gọi dừng trước khi trả lời chuyện thanh toán
+THEN Kết quả = "207"
 
 ELSE
 THEN Kết quả = "N/A"

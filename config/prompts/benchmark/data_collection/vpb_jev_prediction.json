@@ -1,0 +1,17 @@
+{
+  "question": "Kết quả cuộc gọi nhắc nợ của ngân hàng: nhân viên là assistant, người nghe là user, và \"chính chủ\" là chính khách hàng đang nợ",
+  "criteria": {
+    "THIRD_PARTY_RELATIVE": "Người nghe thừa nhận có quen khách (nêu quan hệ bạn, đồng nghiệp, người nhà…, hoặc đáp 'đúng rồi' khi được hỏi có phải người quen của khách), và cuộc gọi không kết thúc bằng hứa trả hộ được chấp nhận, từ chối trả hộ hay chuyển máy. Kể cả khi họ chửi, cho số mới, hoặc nói nhận trả hộ nhưng chưa hẹn ngày. Không chọn nhãn này khi người nghe nói đã thanh toán, hẹn trả hoặc từ chối trả.",
+    "THIRD_PARTY_COMPLAINT": "Người nghe không phải chính chủ và nhân viên chuyển máy sang bộ phận tư vấn hoặc chuyên viên. Chửi hay nói linh tinh mà không bị chuyển máy thì không phải nhãn này.",
+    "THIRD_PARTY_PROMISE": "Người nghe không phải chính chủ, nhận trả hộ và hẹn một thời điểm cụ thể mà nhân viên chấp nhận (hiểu 'chấp nhận' như ở PROMISE_TO_PAY). Nói 'để chị trả hộ' mà chưa hẹn ngày thì chưa phải nhãn này.",
+    "WRONG_NUMBER": "Khi nhân viên hỏi 'anh chị có biết [tên khách] không', người nghe xác nhận không quen, không biết người này. Chỉ nói 'nhầm số' ở câu chào thì chưa đủ.",
+    "CALL_DROPPED": "Cuộc gọi dừng khi chưa xác định được gì: người nghe chỉ nói 'nhầm số' ở câu chào rồi không trả lời câu hỏi có biết khách không (im lặng, alo, báo bận, hỏi chuyện khác); hoặc nhận là chính chủ nhưng dừng trước khi trả lời chuyện thanh toán.",
+    "NO_ANSWER": "Không có lượt nói nào của người nghe.",
+    "UNREACHABLE": "Thuê bao không liên lạc được.",
+    "PROMISE_TO_PAY": "Chính chủ hẹn một thời điểm trả cụ thể và nhân viên chấp nhận mốc đó: nhân viên xác nhận ('như đã hẹn', 'theo thỏa thuận', 'đúng hẹn') hoặc chuyển sang nội dung khác mà không đòi trả sớm hơn. Nếu chính chủ đã từ chối trước đó, chỉ chọn khi họ đồng ý đúng mốc nhân viên đề nghị hoặc sớm hơn.",
+    "REFUSE_OR_DELAY": "Người được đề nghị thanh toán — chính chủ, hoặc bên thứ ba đã nhận trả hộ — từ chối, né tránh, hoặc hẹn một mốc mà nhân viên không chấp nhận: nhân viên vẫn đòi trả sớm hơn, hoặc nói 'em ghi nhận anh/chị từ chối'. Cũng chọn khi đã từ chối rồi mới hẹn một mốc muộn hơn mốc nhân viên đề nghị.",
+    "ALREADY_PAID": "Người nghe nói đã thanh toán và nhân viên không chuyển máy; vẫn chọn dù sau đó người nghe hỏi thêm về số tiền, phí hay hạn.",
+    "COMPLAINT_OR_INQUIRY": "Chính chủ nghe máy và nhân viên chuyển máy sang bộ phận tư vấn hoặc chuyên viên.",
+    "UNDETERMINED": "Cuộc gọi không rơi vào kết quả nào khác."
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "question": "Kết quả cuộc gọi tư vấn mở khoản vay qua điện thoại: nhân viên là assistant, người nghe là user",
+  "criteria": {
+    "Non_Qualified_Customer": "Người nghe báo nhầm số ít nhất 1 lần trong cuộc gọi, hoặc người nghe muốn vay từ 1 tỷ đồng trở lên.",
+    "DNC_request": "Người nghe chửi thô tục, phản ứng tiêu cực mạnh, hoặc yêu cầu không gọi nữa.",
+    "To_Follow_Up": "Chưa trao đổi được với khách: khách báo bận ngay đầu cuộc gọi rồi kết thúc, người khác nghe máy hộ, hoặc khách im lặng, cúp máy, chỉ yêu cầu nhắc lại. Cũng chọn khi cuộc gọi không rơi vào kết quả nào khác.",
+    "No_Demand": "Khách từ chối vay, nói thẳng hoặc hàm ý là không có nhu cầu vay.",
+    "Success_A_XS": "Khách đồng ý muốn vay và số tiền muốn vay từ 6 triệu đến 100 triệu đồng.",
+    "Success_B_XS": "Khách đồng ý muốn vay nhưng không nói rõ số tiền, hoặc số tiền dưới 6 triệu, hoặc trên 100 triệu và dưới 1 tỷ đồng.",
+    "Other": "Khách hỏi thông tin để tìm hiểu khoản vay (lãi suất, kỳ hạn, thủ tục, phí, điều kiện…) nhưng chưa xác nhận có vay hay không."
+  }
+}

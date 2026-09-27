@@ -2,23 +2,33 @@
 
 A task turns one `sample.input` into two questions -- chat messages for an LLM and a `JevInput`
 for JEV -- and each set has its label definitions in `config/prompts/benchmark/<dataset>/`,
-one `*_prediction.txt` per question, that both are built from: the LLM prompt carries it
-verbatim and JEV's field description is it.
-That file is read once, when the task module is imported.
+one `*_prediction.txt` per question, which the LLM prompt carries verbatim. JEV is asked from
+its own file beside it, `*_jev_prediction.json`, written by hand from that definition: the
+`question` says what holds for every option, and `criteria` what each option means on its own.
+The two are kept in step by whoever edits one of them; nothing derives one from the other.
+Both are read once, when the task module is imported.
 """
 
 import json
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, Union, cast
 
 from agent_toolkit.string_utils import extract_json_from_text
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, Field, TypeAdapter, WithJsonSchema, create_model
 
-from ..schema import ToolSpec, Turn
+from ..schema import Frozen, ToolSpec, Turn
 
 PROMPTS = Path(__file__).resolve().parents[2] / "config" / "prompts" / "benchmark"
+
+
+class JevDefinition(Frozen):
+    """A `*_jev_prediction.json`: what JEV is asked of every option, and each option's criterion,
+    in the order JEV is offered them."""
+
+    question: str = Field(min_length=1)
+    criteria: dict[str, Annotated[str, Field(min_length=1)]]
 
 
 def read_label_definition(path: Path) -> str:
@@ -55,30 +65,95 @@ def build_classification_messages(
     ]
 
 
+def read_jev_definition(path: Path, labels: Sequence[str]) -> JevDefinition:
+    """That file's question and criteria.
+
+    `ValueError` unless it gives every label of the set a criterion and no other label one: a
+    label left out could never be picked, and one the set lacks could be picked but not scored.
+    """
+    definition = JevDefinition.model_validate_json(path.read_text(encoding="utf-8"))
+    if sorted(definition.criteria) != sorted(labels):
+        raise ValueError(
+            f"{path}: criteria for {sorted(definition.criteria)}, the set has {sorted(labels)}"
+        )
+    return definition
+
+
 def build_answer_type(
     name: str,
     field: str,
-    options: Sequence[str],
-    description: str,
-    allow_none: bool = False,
+    criteria: Mapping[str, str],
+    question: str,
+    none_criterion: str | None = None,
 ) -> type[BaseModel]:
-    """A one-field model asking JEV to pick one of those options -- or none, when allowed.
+    """A one-field model asking JEV to pick one of those options, or none when `none_criterion`
+    says what none means.
 
-    The description is the question: JEV reads it, and it is not part of the state.
+    TypeSafe builds the choice from the field's JSON schema: the field description is its
+    `question`, and each option's own description is that option's entry in `criteria`, so an
+    option is `Annotated[Literal[option], Field(description=criterion)]`. It reads an optional
+    field only as an `anyOf` of exactly two, `null` and the options, while pydantic writes
+    `Literal | None` as one flat `anyOf`, which TypeSafe refuses; so with none allowed the
+    schema is given explicitly, as the options' own schema nested beside `null`.
     """
-    choice: Any = cast(Any, Literal)[tuple(options)]
-    if allow_none:
-        choice = choice | None
-    fields: dict[str, Any] = {field: (choice, Field(description=description))}
+    members = tuple(
+        Annotated[Literal[option], Field(description=criterion)]
+        for option, criterion in criteria.items()
+    )
+    choice: Any = cast(Any, Union)[members]
+    if none_criterion is not None:
+        schema = {
+            "anyOf": [
+                TypeAdapter(choice).json_schema(),
+                {"type": "null", "description": none_criterion},
+            ]
+        }
+        choice = Annotated[choice | None, WithJsonSchema(schema)]
+    fields: dict[str, Any] = {field: (choice, Field(description=question))}
     return create_model(name, **fields)
 
 
-def describe_label_codes(codes: Mapping[str, str]) -> str:
-    """One line per label saying which code of the definitions it is, for a question asked by
-    label: JEV picks the set's labels, while the definitions above them speak in codes."""
-    lines = [f"- {label}: {code}" for code, label in codes.items()]
-    return "Mỗi lựa chọn là tên của một mã trong định nghĩa ở trên:\n" + "\n".join(
-        lines
+class ChoiceQuestion(Frozen):
+    """What an answer type asks JEV, in the words `build_answer_type` was given: the type's
+    name, its one field, the question, each option's criterion in the order JEV is offered
+    them, and what picking none means -- `None` when none is not offered."""
+
+    name: str
+    field: str
+    question: str
+    criteria: dict[str, str | None]  # `None`: that option has no description
+    none_criterion: str | None = None
+
+
+def read_choice_question(output_type: type[BaseModel]) -> ChoiceQuestion:
+    """The choice that answer type offers, read off its JSON schema the way TypeSafe reads it:
+    each `const` is an option and its `description` the criterion, a `null` beside them is
+    picking none (`""` when it has no description), and the options may sit one `anyOf` down."""
+    ((field, schema),) = output_type.model_json_schema()["properties"].items()
+    criteria: dict[str, str | None] = {}
+    none_criterion: str | None = None
+
+    def add(member: dict[str, Any]) -> None:
+        nonlocal none_criterion
+        if member.get("type") == "null":
+            none_criterion = member.get("description", "")
+        elif "anyOf" in member:
+            for option in member["anyOf"]:
+                add(option)
+        elif (
+            "enum" in member
+        ):  # a plain `Literal`: options with no criterion of their own
+            criteria.update(dict.fromkeys(member["enum"]))
+        else:
+            criteria[member["const"]] = member.get("description")
+
+    add(schema)
+    return ChoiceQuestion(
+        name=output_type.__name__,
+        field=field,
+        question=schema.get("description", ""),
+        criteria=criteria,
+        none_criterion=none_criterion,
     )
 
 

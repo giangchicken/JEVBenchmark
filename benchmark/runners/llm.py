@@ -3,6 +3,11 @@
 The call is `agent_toolkit.llm.complete`, retries and all; what is asked and how the answer is
 read are the task's, handed in as `messages` and `parse`. A failed call never raises: one that
 still fails after the retries is a `Prediction` with `error` set, and one `prediction_failed` event.
+
+`Prediction.input` is `{"complete": {...}}`, the keyword arguments `complete` was called with, the
+key left out. Not the request on the wire, as JEV's is: `complete` builds its own OpenAI client
+and offers no hook on it, so what it adds on the way -- a default `max_tokens`, `enable_thinking`
+moved into `chat_template_kwargs` -- is not in the record.
 """
 
 import time
@@ -39,16 +44,17 @@ async def predict_with_llm(
     parse: Callable[[str], str | None],
 ) -> Prediction:
     """What that model answers to those messages, read by `parse`. `label` is only copied through."""
-    sent: dict[str, Any] = {"messages": messages}
+    arguments: dict[str, Any] = {
+        "messages": messages,
+        "model": config.model,
+        "base_url": config.base_url,
+        **build_completion_settings(config),
+    }
+    sent = {"complete": arguments}
     started = time.perf_counter()
     try:
         answer = await complete(
-            "",
-            messages=messages,
-            model=config.model,
-            api_key=config.api_key.get_secret_value(),
-            base_url=config.base_url,
-            **build_completion_settings(config),
+            "", api_key=config.api_key.get_secret_value(), **arguments
         )
     except Exception as error:
         message = f"{type(error).__name__}: {error}"

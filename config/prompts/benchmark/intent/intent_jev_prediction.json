@@ -1,0 +1,19 @@
+{
+  "question": "Ý định chính và gần nhất của khách hàng (người nói vai user) trong cuộc gọi nhắc nợ. Dựa vào câu nói cuối có nghĩa của khách nhưng xét cả ngữ cảnh cuộc gọi, và không suy diễn ngoài những gì khách nói. Đầu trạng thái có ngày hôm nay và số nợ quá hạn. Nếu khách nói số tiền bằng chữ, đổi ra số trước khi so với số nợ quá hạn, ví dụ: \"hai triệu một trăm chín mươi ngàn/nghìn\" = 2190000, \"năm triệu năm/lăm\" = 5500000, \"mười ba triệu hai\" = 13200000, \"hai triệu mốt\" = 2100000.",
+  "criteria": {
+    "AGREE_TO_PAY": "Khách đồng ý thanh toán nhưng không nói trả bao nhiêu, ví dụ: ừ, oke nhé, được rồi, ừ được rồi anh/chị sắp xếp trả, ok em, anh/chị sẽ chuyển tiền, tôi đồng ý trả tiền, được em ơi, ừ nhưng mà chị phải đi vay xem thế nào đã, mai nhé, ừ ok ok anh thanh toán, ừ không bây giờ tí nữa khoảng một tiếng nữa.",
+    "REFUSE_TO_PAY": "Khách nói không thanh toán hoặc chưa trả được, ví dụ: anh/chị chưa trả được đâu, không trả đâu em, tôi không có tiền trả, không trả trong tháng này.",
+    "PROMISE_FULL_AMOUNT": "Khách hứa trả số tiền lớn hơn hoặc bằng số nợ quá hạn, hoặc hứa trả hết, trả đủ, thanh toán toàn bộ, ví dụ: anh/chị trả hết luôn, anh/chị trả đủ nhé, tôi sẽ thanh toán toàn bộ.",
+    "PROMISE_PARTIAL_AMOUNT": "Khách hứa trả số tiền nhỏ hơn số nợ quá hạn, hoặc chỉ trả trước một phần, ví dụ: anh/chị trả trước một ít, một khoản, một hợp đồng rồi khi nào có tiền thì trả thêm sau, tôi sẽ trả một phần trước.",
+    "PAID_NO_DATE": "Khách nói đã thanh toán nhưng không nói vào ngày nào, ví dụ: rồi đấy em check lại đi, chuyển rồi gì em, tôi đã chuyển rồi, đã thanh toán từ lâu, anh nạp tiền vào tài khoản của anh rồi.",
+    "PAID_BEFORE_TODAY": "Khách nói đã thanh toán vào một ngày trước hôm nay (hôm qua, hôm kia, 3 ngày trước, tuần trước…), ví dụ: tôi đã thanh toán hôm qua, thanh toán tuần trước rồi, hôm trước anh nạp tiền vào tài khoản của anh rồi mà.",
+    "PAID_TODAY": "Khách nói đã thanh toán trong hôm nay, ví dụ: sáng nay chuyển rồi gì, sáng nay đã chuyển, tôi vừa mới thanh toán sáng nay, nãy anh nạp tiền vào tài khoản rồi mà.",
+    "BUSY": "Người nghe báo đang bận, ví dụ: thôi tôi bận lắm thế nhé, tôi đang bận quá, tôi không rảnh đâu, sau gọi lại nhé.",
+    "ASK_REPEAT": "Khách không nghe rõ và yêu cầu nhắc lại, ví dụ: alo alo anh nghe không rõ, chị chưa nghe rõ em nói gì, em nhắc lại giúp anh với, sóng yếu quá nói lại đi em, mới nói gì ý nhỉ.",
+    "FALLBACK": "Chỉ khi nội dung hoàn toàn không liên quan hoặc vô nghĩa, ví dụ: thời tiết hôm nay đẹp, có chàng trai viết lên cây, ối dồi ôi trình là gì trình ai chấm, hôm nay ăn gì nhỉ.",
+    "THIRD_PARTY": "Người nghe là người khác cầm máy, nghe máy hộ khách, ví dụ: à tôi là bố/mẹ/anh/chị nó cầm máy hộ, tôi là người nhà, tôi là bố nó, tôi là anh trai của nó.",
+    "WANTS_TO_SPEAK": "Khách muốn nói hoặc hỏi một điều nhưng chưa nói ra là điều gì, ví dụ: em ơi chị bảo này, này em nghe chị nói không, chị bảo chị bảo, chị hỏi cái này, tôi có việc này cần hỏi, tôi muốn nhờ em làm gì đó.",
+    "FAQ": "Trong câu của khách có một câu hỏi, về khoản vay, lãi suất, hạn hay ngày thanh toán, số ngày quá hạn, số tiền còn lại, cách thanh toán, ai gọi hay gọi từ đâu; hoặc khách chửi. Chọn FAQ cả khi khách vừa nói đã đóng tiền mà vẫn hỏi, ví dụ: làm sao để thanh toán, thời gian vay là bao lâu, hạn là ngày nào, đóng rồi nhưng còn lại bao nhiêu, sao hôm nay đã có người gọi rồi, nợ nhóm hai là sao, bị điên à.",
+    "VIRTUAL_ASSISTANT": "Người nghe là trợ lý ảo hoặc hệ thống trả lời tự động nghe máy thay chủ thuê bao, ví dụ: em là trợ lý ảo của nhà mạng đang nghe máy giúp chủ thuê bao, hiện tại thuê bao đang ngoài vùng phủ sóng nên em tiếp nhận cuộc gọi thay, đây là hệ thống trả lời tự động của nhà mạng."
+  }
+}

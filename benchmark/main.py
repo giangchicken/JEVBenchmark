@@ -5,7 +5,8 @@
 
 Every config is read and checked before the first call, so a broken one stops the run before
 anything is spent. Each model gets its own semaphore of `max_concurrency` and the models run side
-by side. A sample is appended to `predictions/<model>.jsonl` as soon as it comes back.
+by side. A sample is appended to `predictions/<model>.jsonl` as soon as it comes back, what the
+model was sent for it included, and that input once more on its own to `input/<model>.jsonl`.
 
 **Resume** (R14): a run started again with the same `--run-id` asks nothing a model already
 answered. An answer that could not be parsed counts as answered -- asking again would give that
@@ -32,7 +33,9 @@ from .models import CONFIG_DIR, ConfigError, ModelConfig, load_model_configs
 from .report_generation import (
     ModelResult,
     Report,
+    append_input,
     append_prediction,
+    build_input_path,
     build_predictions_path,
     read_prediction_file,
     write_report,
@@ -56,8 +59,6 @@ DATASETS: Final[dict[str, tuple[type[Any], Task]]] = {
 # One sample through one model. The label goes along only to be copied onto the prediction.
 Predictor = Callable[[ModelConfig, Task, Any], Awaitable[Prediction]]
 
-# Named, not `__name__`: run as `-m benchmark.main` that is `__main__`, outside the tree
-# `install_structured_events` listens on.
 logger = get_logger("benchmark.main")
 
 
@@ -101,14 +102,15 @@ async def run_model(
     config: ModelConfig,
     task: Task,
     samples: Sequence[Any],
-    path: Path,
+    run_dir: Path,
     predict: Predictor,
 ) -> list[Prediction]:
-    """Every sample's prediction by that model, asking only what the file lacks or failed.
+    """Every sample's prediction by that model, asking only what its file lacks or failed.
 
     A stored prediction also counts as missing when its gold label is not the sample's: the
     test set was corrected since, and scoring it against the old label would be silently wrong.
     """
+    path = build_predictions_path(run_dir, config.name)
     labels = {sample.id: sample.label for sample in samples}
     done = {
         sample_id
@@ -121,6 +123,7 @@ async def run_model(
     async def ask(sample: Any) -> None:
         async with gate:
             prediction = await predict(config, task, sample)
+        append_input(build_input_path(run_dir, config.name), prediction)
         append_prediction(path, prediction)
 
     await asyncio.gather(*(ask(sample) for sample in pending))
@@ -161,16 +164,7 @@ async def run_dataset(
         },
     )
     runs = await asyncio.gather(
-        *(
-            run_model(
-                config,
-                task,
-                samples,
-                build_predictions_path(run_dir, config.name),
-                predict,
-            )
-            for config in configs
-        )
+        *(run_model(config, task, samples, run_dir, predict) for config in configs)
     )
     predictions = {config.name: run for config, run in zip(configs, runs, strict=True)}
 

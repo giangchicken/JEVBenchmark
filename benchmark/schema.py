@@ -303,13 +303,16 @@ class Prediction(Frozen):
     - failed call: `prediction` is `None` and `error` is `"<Type>: <message>"`.
     Both failures count as wrong, so every model is scored on the same n.
 
-    `input` is exactly what the model was sent, failed call or not: an LLM's
-    `{"messages": [...]}`, JEV's `{"state", "question", "options"}`.
+    `input` is what the model was sent, failed call or not: an LLM's `{"complete": {...}}`, JEV's
+    `{"agent": {...}, "request": {...}}` (the runners say what each holds). It is written with
+    the prediction and again, on its own, to `input/<model>.jsonl`. A run made before 2026-09-27
+    holds the older `{"messages"}` / `{"state", "question", "options"}` here, and JEV's file of
+    run `20260927-jev-written-criteria` holds none, which reads back as `{}`.
     """
 
     id: str
     label: str
-    input: dict[str, Any]
+    input: dict[str, Any] = Field(default_factory=dict)
     prediction: str | None
     error: str | None = None
     latency_ms: float = Field(ge=0)

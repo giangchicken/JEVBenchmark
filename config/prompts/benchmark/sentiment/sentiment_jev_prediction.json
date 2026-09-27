@@ -1,0 +1,8 @@
+{
+  "question": "Cảm xúc của khách hàng (người nói vai user) tại lượt nói cuối cùng, có xét ngữ cảnh cả cuộc gọi. Nếu cảm xúc thay đổi trong cuộc gọi, chọn theo cảm xúc ở lượt nói cuối cùng.",
+  "criteria": {
+    "positive": "Khách hài lòng, vui, cảm ơn thật lòng, hoặc nhẹ nhõm ở lượt nói cuối.",
+    "neutral": "Khách chỉ cung cấp thông tin, hỏi, hoặc xác nhận, không bộc lộ cảm xúc rõ ràng.",
+    "negative": "Khách bực bội, phàn nàn, chửi, đòi ngừng gọi, hoặc khen mỉa mai."
+  }
+}

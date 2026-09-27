@@ -1,0 +1,8 @@
+{
+  "question": "Giới tính của khách hàng (người nói vai user) trong cuộc gọi, dựa vào cách khách tự xưng, cách khách sửa lại cách gọi của nhân viên, và những gì khách kể về bản thân. Cách nhân viên gọi khách không phải là căn cứ nếu khách không xác nhận.",
+  "criteria": {
+    "male": "Khách là nam: tự xưng anh, chú, bác trai, ông, hoặc nói về vợ mình (\"vợ tôi\", \"bà nhà tôi\").",
+    "female": "Khách là nữ: tự xưng chị, cô, bác gái, bà, hoặc nói về chồng mình (\"chồng chị\", \"ông xã\").",
+    "unknown": "Không đủ căn cứ: khách chỉ dùng đại từ trung tính (tôi, mình, em) và không có tín hiệu nào khác về giới tính."
+  }
+}

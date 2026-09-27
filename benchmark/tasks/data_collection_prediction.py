@@ -8,7 +8,10 @@ in `data_collection/<source>_prediction.txt` -- and its own answers:
 - vpb's are codes (`"205"`, `"1107"`, `"N/A"`), which `VPB_CODES` turns into the set's labels.
 
 An LLM's answer is read from `{"action_code": ...}` or, failing that, from the one answer
-written alone -- `1` is not found inside `1107`. JEV picks the source's labels themselves.
+written alone -- `1` is not found inside `1107`.
+
+JEV picks the source's labels themselves, asked from `data_collection/<source>_jev_prediction.json`,
+one criterion per label.
 """
 
 from dataclasses import dataclass
@@ -21,8 +24,8 @@ from .common import (
     PROMPTS,
     build_answer_type,
     build_classification_messages,
-    describe_label_codes,
     parse_code_answer,
+    read_jev_definition,
     read_label_definition,
     render_conversation,
 )
@@ -41,20 +44,16 @@ class Source:
 
 
 def build_source(source: str, answer_to_label: dict[str, str]) -> Source:
-    """A source whose LLM answers are those keys; JEV is asked for the labels themselves, told
-    which code each is when the two differ."""
+    """A source whose LLM answers are those keys; JEV is asked for the labels themselves."""
     definition = read_label_definition(
         PROMPTS / "data_collection" / f"{source}_prediction.txt"
     )
-    labels = list(answer_to_label.values())
-    speaks_in_codes = any(code != label for code, label in answer_to_label.items())
-    question = (
-        f"{definition}\n\n{describe_label_codes(answer_to_label)}"
-        if speaks_in_codes
-        else definition
+    asked = read_jev_definition(
+        PROMPTS / "data_collection" / f"{source}_jev_prediction.json",
+        list(answer_to_label.values()),
     )
     answer_type = build_answer_type(
-        f"{source.capitalize()}Answer", KEY, labels, question
+        f"{source.capitalize()}Answer", KEY, asked.criteria, asked.question
     )
     return Source(definition, answer_to_label, answer_type)
 
